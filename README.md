@@ -3,7 +3,9 @@
 ## Overview
 
 This project demonstrates the end-to-end development of a Power BI executive reporting solution using the AdventureWorks Data Warehouse.
+
 The objective is to transform raw sales data into meaningful business insights that support executive decision-making through data modelling, DAX, interactive dashboards and business analysis.
+
 This project is being developed following Microsoft Power BI and PL-300 best practices while applying enterprise Business Intelligence consulting principles.
 
 ---
