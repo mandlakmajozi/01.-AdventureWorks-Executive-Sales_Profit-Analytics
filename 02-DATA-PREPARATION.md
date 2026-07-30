@@ -1,30 +1,233 @@
-## Power Query Fundamentals
+# Data Preparation
 
-### Objectives
-- Connected to AdventureWorksDW2022 through SQL Server.
-- Explored the Power Query Editor interface.
-- Learned how queries retrieve and transform data.
-- Understood the Applied Steps pipeline.
-- Used the Formula Bar to inspect M expressions.
-- Verified Query Folding using View Native Query.
+## Purpose
 
-### Key Decisions
-- Use Import mode for executive reporting.
-- Perform transformations in Power Query rather than modifying the source database.
-- Keep transformations foldable where possible to improve refresh performance.
+This document summarises how the source data was assessed and prepared for the **AdventureWorks Executive Sales & Profit Analytics** solution.
 
-## Data Assessment Approach and Limitations
+Detailed reasoning behind material decisions is recorded separately in [08-DECISION-LOG.md](08-DECISION-LOG.md).
 
-Source-level documentation, including an entity relationship diagram and data dictionary, was not available during data preparation.
+The final Power Query transformations and semantic model provide the technical implementation details.
 
-Column-retention decisions were therefore based on:
+---
 
-- Confirmed business requirements
-- Power Query inspection
-- Full-dataset column profiling
-- Row-level validation using temporary comparison columns where required
-- Analytical value, model size, maintainability and governance considerations
+## Source
 
-Power Query profiling was changed from the default first 1,000 rows to the entire dataset before final decisions were made.
+- **Database:** AdventureWorksDW2022
+- **Platform:** SQL Server
+- **Power BI Storage Mode:** Import
+- **Data Preparation Tool:** Power Query
 
-The decisions documented in this project reflect the evidence available at the time and should be reassessed if additional source documentation, stakeholder requirements or changes in data behaviour become available.
+The source contains multiple fact and dimension tables representing different business processes.
+
+Only data relevant to the agreed analytical requirements will ultimately be included in the final semantic model.
+
+---
+
+## Source Documentation
+
+Formal source documentation such as an:
+
+- Entity Relationship Diagram (ERD)
+- Data dictionary
+- Formal table definitions
+- Formal column definitions
+
+was not available during the initial preparation phase.
+
+Data assessment was therefore based on:
+
+- Business requirements
+- Available query structures
+- Column names
+- Observable data values
+- Power Query profiling
+- Relationship keys
+- Validation tests
+
+Where the meaning of a field could not be confirmed, the uncertainty was considered before a final decision was made.
+
+---
+
+## Data Profiling
+
+Power Query profiling tools were used to inspect:
+
+- Data quality
+- Null values
+- Errors
+- Distinct values
+- Unique values
+- Distributions
+- Minimum and maximum values
+- Potential duplicate or constant columns
+
+Profiling was changed from the default **first 1,000 rows** to **entire dataset** before making final decisions based on column behaviour.
+
+This was necessary because the first 1,000 rows were not always representative of the complete dataset.
+
+---
+
+## Validation
+
+Where profiling alone was insufficient, temporary validation columns were created.
+
+These were used to test assumptions such as whether two columns contained identical values on every row.
+
+Temporary validation columns were removed after the investigation was completed.
+
+---
+
+## Query Assessment
+
+Queries were assessed according to:
+
+- Business requirements
+- Main business events
+- Analytical importance
+- Relationship requirements
+- Business hierarchy
+
+The primary sales processes were assessed first:
+
+- FactInternetSales
+- FactResellerSales
+
+Dimensions and supporting tables were then prioritised according to the information required to analyse those sales processes.
+
+---
+
+## Column Selection
+
+Columns were reviewed against the business requirements.
+
+During discovery, potentially useful fields may remain available while their purpose is investigated.
+
+Before the final semantic model is completed, unnecessary fields will be removed to improve:
+
+- Model simplicity
+- Performance
+- Maintainability
+- Governance
+- User experience
+
+Both **Choose Columns** and **Remove Columns** may be used depending on the structure of the query and the stage of preparation.
+
+---
+
+## Navigation Columns
+
+Unused navigation columns were removed where the related tables were available separately.
+
+The corresponding relationship keys were retained where required.
+
+This allows relationships to be deliberately designed in the semantic model instead of expanding related tables directly into fact queries.
+
+---
+
+## Keys
+
+Relationship and technical keys were retained where they may support:
+
+- Relationships
+- Reconciliation
+- Troubleshooting
+- Future transformations
+- Developer handover
+
+Technical keys do not need to be displayed to report users and may later be hidden in the semantic model.
+
+Alternate keys were retained during the current scoping stage where they may support future relationships, integration or reconciliation.
+
+Their final requirement will be reviewed during modelling.
+
+---
+
+## Date Fields
+
+Required date roles were retained for later time-intelligence modelling.
+
+Examples include:
+
+- Order Date
+- Due Date
+- Ship Date
+- Inventory Movement Date
+
+Duplicate representations of the same date may be removed where the Date dimension provides the required analytical functionality.
+
+---
+
+## Column Naming
+
+Columns were renamed where necessary to improve:
+
+- Readability
+- Business understanding
+- DAX readability
+- Developer handover
+- Report usability
+
+Abbreviations were expanded and spaces were added where appropriate.
+
+Renaming was only performed where the revised name preserved the original business meaning.
+
+---
+
+## Data Minimisation
+
+Fields that did not support the current analytical requirements were removed or identified for later removal.
+
+Particular attention was given to:
+
+- Operational identifiers
+- Duplicate fields
+- Constant-value fields
+- Unnecessary personal information
+- Fields outside the current business scope
+
+Potentially useful fields that could not yet be validated were retained temporarily for further investigation.
+
+---
+
+## Fact Table Preparation
+
+The primary sales fact tables are being assessed independently because they represent different business processes.
+
+A field removed from Internet Sales is not automatically removed from Reseller Sales.
+
+Each fact table is assessed according to:
+
+- Its business event
+- Available measures
+- Relationship keys
+- Analytical requirements
+- Data behaviour
+
+Fact tables will not be combined unless their grain and business meaning are proven to be compatible.
+
+---
+
+## Dimension Preparation
+
+Dimensions are being assessed according to their role in explaining the business events.
+
+Potential dimension simplification or flattening will be considered during semantic-model design rather than during initial source preparation.
+
+---
+
+## Queries Requiring Further Investigation
+
+Some queries require additional assessment before their final role can be determined.
+
+These currently include areas such as:
+
+- Currency rates
+- Finance
+- Inventory
+- Prospective buyers
+- Call centre information
+- Survey responses
+
+These tables will only enter the final model where they support an approved business requirement.
+
+---
