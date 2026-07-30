@@ -1,468 +1,83 @@
-# Data Preparation
+# Decision Log
 
 ## Purpose
 
-This document explains how AdventureWorks source data is assessed, profiled, selected and prepared for the **Executive Sales & Profit Analytics** solution.
+This log captures the key decisions made during the **AdventureWorks Executive Sales & Profit Analytics** project.
 
-Detailed table- and column-level decisions, alternatives and trade-offs are maintained in [08-DECISION-LOG.md](08-DECISION-LOG.md).
+It focuses on decisions that demonstrate:
 
----
-
-## Source and Storage Mode
-
-- **Source:** AdventureWorksDW2022 hosted in SQL Server
-- **Power BI storage mode:** Import
-- **Preparation tool:** Power Query
-
-Import mode was selected because the solution focuses primarily on historical analysis, executive KPIs and scheduled refresh.
-
-It provides responsive reports and broad Power BI functionality while avoiding the performance requirements of continuous source queries.
-
----
-
-## Data Assessment Approach
-
-The project follows four stages:
-
-1. **Discovery** – understand the available schema and business processes.
-2. **Profiling** – inspect data quality, values, distributions and potential redundancy.
-3. **Preparation** – transform and validate the required data.
-4. **Model design** – retain only data justified by the analytical solution.
-
-During discovery, potentially useful fields may remain available for investigation.
-
-This does not mean every available field will enter the final semantic model.
-
----
-
-## Source Documentation Limitations
-
-Source-level documentation was not available during the current assessment.
-
-Unavailable documentation included:
-
-- Entity Relationship Diagram (ERD)
-- Data dictionary
-- Formal column definitions
-- Source-to-target mappings
-
-Decisions were therefore based on:
-
-- Confirmed business requirements
-- Power Query structure
-- Observable data values
-- Full-dataset profiling
-- Temporary validation logic where required
-- Model design
-- Performance
+- Business reasoning
+- Technical judgement
+- Data governance
+- Trade-off analysis
 - Maintainability
-- Governance
+- Solution design
 
-Decisions should be reassessed if stronger source documentation becomes available.
-
----
-
-## Full-Dataset Profiling
-
-Power Query profiling was changed from the default **first 1,000 rows** to **entire dataset** before final decisions were made using:
-
-- Distinct counts
-- Unique values
-- Nulls
-- Errors
-- Minimum and maximum values
-- Value distribution
-
-This materially affected the project.
-
-For example, `SalesOrderLineNumber` appeared constant in the initial preview but contained eight distinct values when the full dataset was profiled.
+Detailed Power Query steps and transformation formulas are available within the Power BI solution and are intentionally not repeated here.
 
 ---
 
-## Temporary Validation Columns
+## Project Context
 
-Temporary helper columns are used when profiling alone cannot prove whether two fields match row-by-row.
+Formal source documentation such as an ERD and data dictionary was not available during the initial assessment.
 
-For example, a temporary Boolean comparison was created between:
+Where field definitions could not be confirmed, decisions were based on:
 
-`ExtendedAmount`
-
-and:
-
-`UnitPrice`
-
-The comparison returned `TRUE` for every available record.
-
-The helper column was removed after validation.
-
----
-
-## Logical Table Assessment Order
-
-Tables are not assessed alphabetically or according to the source order.
-
-The order follows:
-
-- Primary business events
 - Business requirements
-- Visible relationship keys
-- Analytical dependency
-- Business hierarchy
-
-Current assessment order:
-
-1. FactInternetSales
-2. FactResellerSales
-3. DimProduct
-4. DimProductCategory
-5. DimProductSubcategory
-6. DimDate
-7. DimReseller
-8. DimEmployee
-9. DimPromotion
-10. DimCurrency
-11. DimSalesTerritory
-12. DimCustomer
-13. FactInternetSalesReason
-14. DimSalesReason
-15. FactProductInventory
-16. DimDepartmentGroup
-17. DimGeography
-18. DimOrganization
-
-The remaining queries currently retain their source order pending deeper assessment:
-
-- DimScenario
-- FactCallCenter
-- FactCurrencyRate
-- FactFinance
-- FactSalesQuota
-- FactSurveyResponse
-- NewFactCurrencyRate
-- ProspectiveBuyer
-
----
-
-## Primary Sales Processes
-
-The two primary business events currently identified are:
-
-- `FactInternetSales`
-- `FactResellerSales`
-
-Other fact tables represent different business processes and will not automatically be included in the final model.
-
-Each fact table must be assessed according to:
-
-- Grain
-- Measures
-- Keys
-- Relationships
-- Business requirement
-- Analytical value
-
----
-
-## Navigation Columns
-
-Unused navigation columns are removed when:
-
-- The related dimension is available separately
-- The scalar relationship key is retained
-- The navigation column is not required for transformation logic
-
-Relationships will be deliberately designed in the semantic model rather than relying on automatically exposed navigation objects.
-
----
-
-## Keys and Developer Continuity
-
-Relationship and technical keys may remain available even if they are hidden from report users.
-
-These fields can support:
-
-- Relationships
-- Troubleshooting
-- Reconciliation
-- Developer handover
-- Future integration
-
-Not every model field must appear in reports.
-
----
-
-## Alternate Keys
-
-Alternate keys are retained during the current scoping stage when they may support:
-
-- Business identifiers
-- Cross-source reconciliation
-- Integration
-- Future relationships
-- Developer understanding
-
-Alternate keys are not inherently required for inactive relationships.
-
-Their final inclusion will be reviewed during semantic-model design.
-
----
-
-## Date Handling Principle
-
-The project retains required **date roles**, not automatically every representation of every date.
-
-Examples include:
-
-- Order Date
-- Ship Date
-- Due Date
-
-Date keys are retained where required for relationships to the date dimension.
-
-Redundant physical-date columns may be removed when they add no separate analytical or validation value.
-
----
-
-## Column Selection Strategy
-
-During discovery and preparation, potentially valuable information can remain available while its purpose is investigated.
-
-Before production, every retained field must justify its cost through one or more of:
-
-- Business analysis
-- Relationship
-- Validation
-- Reconciliation
-- Governance
-- Developer support
-
-This prevents premature deletion during discovery while avoiding unnecessary fields in the final semantic model.
-
----
-
-# FactInternetSales
-
-## Confirmed Retained Fields
-
-- ProductKey
-- OrderDateKey
-- DueDateKey
-- ShipDateKey
-- CustomerKey
-- PromotionKey
-- CurrencyKey
-- SalesTerritoryKey
-- SalesOrderNumber
-- SalesOrderLineNumber
-- UnitPrice
-- UnitPriceDiscountPct
-- DiscountAmount
-- ProductStandardCost
-- TotalProductCost
-- SalesAmount
-- TaxAmt
-- Freight
-
-## Confirmed Removed Fields
-
-- RevisionNumber
-- OrderQuantity
-- ExtendedAmount
-- CarrierTrackingNumber
-- CustomerPONumber
-- OrderDate
-- DueDate
-- ShipDate
-- Unused navigation columns
-
----
-
-## FactInternetSales Validation Findings
-
-### SalesOrderLineNumber
-
-Initial profiling of the first 1,000 records suggested a single value.
-
-Full-dataset profiling revealed eight distinct values.
-
-**Decision:** Retain.
-
----
-
-### OrderQuantity
-
-Full-dataset profiling showed one distinct value.
-
-The field therefore provides no analytical variation in the available dataset.
-
-**Decision:** Remove from the current model.
-
-Review if future data behaviour changes.
-
----
-
-### ExtendedAmount
-
-The values appeared identical to `UnitPrice`.
-
-A temporary row-level Boolean comparison returned `TRUE` for every available record.
-
-**Decision:** Remove as an exact duplicate in the available dataset.
-
----
-
-### ProductStandardCost and TotalProductCost
-
-Both fields currently contain identical values.
-
-They are retained because their names imply potentially different business concepts, and no source documentation is available to prove that they are semantically identical.
-
-**Decision:** Retain both pending stronger evidence.
-
----
-
-## FactInternetSales Naming Standard
-
-| Source | Business-Friendly Name |
-|---|---|
-| ProductKey | Product Key |
-| OrderDateKey | Order Date Key |
-| DueDateKey | Due Date Key |
-| ShipDateKey | Ship Date Key |
-| CustomerKey | Customer Key |
-| PromotionKey | Promotion Key |
-| CurrencyKey | Currency Key |
-| SalesTerritoryKey | Sales Territory Key |
-| SalesOrderNumber | Sales Order Number |
-| SalesOrderLineNumber | Sales Order Line Number |
-| UnitPrice | Unit Price |
-| UnitPriceDiscountPct | Unit Price Discount Percentage |
-| DiscountAmount | Total Discount |
-| ProductStandardCost | Standard Unit Cost |
-| TotalProductCost | Total Product Cost |
-| SalesAmount | Sales Amount |
-| TaxAmt | Tax Amount |
-| Freight | Freight Amount |
-
-Naming changes must improve readability without changing or inventing the source field's business meaning.
-
----
-
-# FactResellerSales
-
-`FactResellerSales` is retained as a primary sales-event query.
-
-Its fields are assessed independently from Internet Sales because reseller transactions may contain different operational and analytical information.
-
-`CarrierTrackingNumber` and `CustomerPONumber` remain available during investigation because they may support fulfilment, order tracing or reseller-performance investigation.
-
-They are not yet confirmed as final executive-reporting fields.
-
----
-
-# DimProduct
-
-`StartDate`, `EndDate` and `Status` are retained.
-
-They may support product-lifecycle analysis including:
-
-- Product introductions
-- Discontinuations
-- Product removals
-- Availability-related changes in sales performance
-
----
-
-# DimReseller
-
-`NumberOfEmployees` is excluded from the current final-model scope.
-
-AdventureWorks evaluates resellers according to their measurable contribution to AdventureWorks performance rather than how the reseller manages its own workforce.
-
-Bank and payment-related fields remain under investigation and require an approved risk/fraud business requirement before final inclusion.
-
----
-
-# DimEmployee
-
-Direct contact and operational fields currently identified for removal include:
-
-- Login ID
-- Email
-- Phone
-- Emergency contact details
-- Employee photo
-
-Employee analytical fields such as performance, territory, department, compensation and availability remain subject to requirement validation and governance review.
-
----
-
-# DimCustomer
-
-Customer segmentation attributes may support executive analysis.
-
-Direct contact information such as email and telephone does not automatically belong in the final executive semantic model and requires a specific analytical requirement.
-
----
-
-# FactProductInventory
-
-`DateKey` and `MovementDate` are currently retained until their separate meanings can be validated.
-
-No field will be removed solely because two values appear similar during early profiling.
-
----
-
-# FactCurrencyRate and NewFactCurrencyRate
-
-Both queries remain under investigation.
-
-Before either is selected, appended or removed, compare:
-
-- Structure
-- Row count
-- Date coverage
-- Currency coverage
-- Nulls and errors
-- Duplicate combinations
-- Rate values
-
----
-
-# FactFinance
-
-FactFinance remains under investigation.
-
-The query contains `AccountKey`, but a separately loaded `DimAccount` query is not currently available.
-
-If finance analysis is confirmed in scope, the required dimension must be deliberately sourced and assessed rather than relying on navigation columns.
-
----
-
-# ProspectiveBuyer
-
-ProspectiveBuyer remains under investigation.
-
-Its inclusion depends on whether prospect or conversion analysis becomes an approved project requirement.
-
----
-
-## Current Status
-
-Completed:
-
-- Power Query fundamentals
-- Query folding
-- Data profiling
-- Data types
-- Data categories
-- Remove Columns vs Choose Columns
-- Column naming principles
+- Available source structure
 - Full-dataset profiling
-- Initial source scoping
-- FactInternetSales assessment
-- Initial multi-table field assessment
+- Observable data behaviour
+- Validation within Power Query
 
-Next:
+Decisions can be revisited if stronger source documentation or new requirements become available.
 
-Continue table-level scoping and begin applying the approved Power Query transformations.
+---
+
+## Decision Register
+
+| ID | Decision | Rationale / Business Value | Status |
+|---|---|---|---|
+| D001 | Use **Import mode** | The solution focuses on historical sales, profitability and executive KPIs rather than live transaction monitoring. Import provides strong report performance and broad Power BI functionality. | Confirmed |
+| D002 | Profile the **entire dataset** before final data-quality decisions | Profiling only the first 1,000 rows produced misleading results. Full profiling exposed additional values and improved the reliability of column-retention decisions. | Confirmed |
+| D003 | Assess queries in a **business-led logical order** | FactInternetSales and FactResellerSales represent the main sales events. Their structure and keys were used to prioritise the dimensions required to explain those events. | Confirmed |
+| D004 | Separate **discovery/staging** from the final semantic model | Potentially useful fields are retained during investigation when necessary, but only justified fields should remain in the final model. This prevents premature deletion without creating an unnecessarily wide production model. | Confirmed |
+| D005 | Remove unused **navigation columns** while retaining required keys | Related dimensions will be deliberately modelled rather than expanded automatically into fact queries. This provides greater control and supports a cleaner star-schema design. | Confirmed |
+| D006 | Retain technical and alternate keys where they support relationships, reconciliation or developer continuity | Not every retained field must be visible to report users. Some fields exist to make the solution understandable and maintainable for future developers. | Confirmed |
+| D007 | Remove `OrderQuantity` from FactInternetSales | Full-dataset profiling showed one distinct value across the available data, so the field added no analytical variation to the current solution. | Confirmed |
+| D008 | Remove `ExtendedAmount` from FactInternetSales | Full-data validation confirmed that it duplicated `UnitPrice` on every available row, providing no additional analytical value. | Confirmed |
+| D009 | Retain both `ProductStandardCost` and `TotalProductCost` | Although their current values match, their names indicate potentially different business concepts. Without source definitions, removing one could discard information whose intended meaning differs. | Confirmed / Review if documentation becomes available |
+| D010 | Assess FactResellerSales independently from FactInternetSales | Internet and reseller sales represent different business processes. A field that has no value in Internet Sales may still support reseller fulfilment, tracing or performance analysis. | Confirmed |
+| D011 | Retain Product Start Date, End Date and Status | These attributes can help explain product introductions, discontinuations and availability changes that affect sales performance. | Confirmed |
+| D012 | Exclude reseller employee count from the final analytical scope | AdventureWorks needs to evaluate reseller performance, not manage the reseller's internal workforce efficiency. Executive attention should remain on factors that materially affect AdventureWorks. | Confirmed |
+| D013 | Minimise unnecessary employee and customer personal information | Contact details and operational personal information should not enter the analytical model unless they support an explicit business requirement. Analytical attributes are prioritised over unnecessary identifying information. | Confirmed |
+| D014 | Do not combine fact tables until their **grain and business meaning** are understood | Different fact tables may represent different events and levels of detail. Combining incompatible facts could create duplication, double counting and incorrect measures. | Confirmed |
+| D015 | Consider flattening related dimensions during semantic-model design | The source database structure does not need to be reproduced exactly in Power BI. Related dimensions may later be simplified where this improves the star schema and report usability. | Deferred to modelling |
+| D016 | Compare `FactCurrencyRate` and `NewFactCurrencyRate` before selecting or combining them | Their names and structures suggest overlap, but their relationship is not documented. They will be compared before deciding whether one is redundant, newer or suitable for appending. | Investigate |
+| D017 | Do not automatically include FactFinance without its required analytical context | FactFinance contains an Account key, but its related account dimension is not currently loaded separately. Finance will only be included once its supporting structure and business requirement are understood. | Investigate |
+| D018 | Confirm the business purpose of ProspectiveBuyer before including it | Similarity to customer data does not automatically justify prospect analysis. The table should only enter the final model if prospective-customer or conversion analysis supports the agreed requirements. | Investigate |
+
+---
+
+## Decision Principles
+
+The project follows four rules:
+
+1. **Business requirements come first.**
+2. **Observed evidence is preferred over assumptions.**
+3. **Discovery can be broad; the final semantic model should be lean.**
+4. **Technical decisions must remain understandable to the next developer.**
+
+---
+
+## Open Decisions
+
+The following will be resolved as the project progresses:
+
+- Final scope of Finance analysis
+- FactCurrencyRate vs NewFactCurrencyRate
+- Final employee analytical attributes
+- Final customer identifying/contact fields
+- Role of ProspectiveBuyer
+- Role of Call Center and Survey data
+- Final dimension flattening
+- Final fact-table relationships and grain
