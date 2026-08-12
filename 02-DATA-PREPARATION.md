@@ -67,6 +67,23 @@ This was necessary because the first 1,000 rows were not always representative o
 
 ---
 
+## Missing Values and Data Quality
+
+Missing values were reviewed before any transformation was applied.
+
+Nulls were not automatically replaced because they can represent different business situations, including:
+
+- A value that does not apply
+- A value that is not recorded
+- A conditionally populated attribute
+- A legitimately open-ended value
+
+Potential resolutions were reviewed against related columns and tables before implementation. Values were only changed where the available evidence supported a reliable transformation.
+
+One confirmed issue was `NewFactCurrencyRate[DateKey]`, which was completely null while the corresponding `Date` column was fully populated. The relationship between `Date` and `DateKey` was validated against both `FactCurrencyRate` and `DimDate`. A replacement DateKey was then derived using the existing `YYYYMMDD` convention and validated before the original empty column was removed.
+
+---
+
 ## Validation
 
 Where profiling alone was insufficient, temporary validation columns were created.
@@ -74,6 +91,8 @@ Where profiling alone was insufficient, temporary validation columns were create
 These were used to test assumptions such as whether two columns contained identical values on every row.
 
 Temporary validation columns were removed after the investigation was completed.
+
+Transformations affecting missing or derived values were also validated against related source fields or dimension keys before being accepted.
 
 ---
 
@@ -159,7 +178,9 @@ Duplicate representations of the same date may be removed where the Date dimensi
 
 ## Column Naming
 
-Columns were renamed where necessary to improve:
+Source column names are being retained during preparation to preserve traceability and reduce rework while transformations are still being assessed.
+
+Once preparation and validation are complete, surviving columns will be renamed in a controlled final pass before load where necessary to improve:
 
 - Readability
 - Business understanding
@@ -167,9 +188,7 @@ Columns were renamed where necessary to improve:
 - Developer handover
 - Report usability
 
-Abbreviations were expanded and spaces were added where appropriate.
-
-Renaming was only performed where the revised name preserved the original business meaning.
+Abbreviations will be expanded and spaces added where appropriate, provided the revised name preserves the original business meaning.
 
 ---
 
