@@ -61,6 +61,9 @@ Decisions can be revisited if stronger source documentation or new requirements 
 | D022 | Retain `DimCustomer[Suffix]` and leave missing values null | A suffix may be required to distinguish people with otherwise similar names. Low population does not make the attribute analytically or operationally meaningless, and absence of a suffix is legitimate. | Confirmed |
 | D023 | Reconstruct `NewFactCurrencyRate[DateKey]` from `Date` | `DateKey` was completely null while `Date` was fully populated. The `YYYYMMDD` DateKey convention was validated against both `FactCurrencyRate` and `DimDate`, allowing the missing foreign key to be derived reliably rather than replaced arbitrarily. | Confirmed |
 | D024 | Defer business-friendly renaming until preparation and validation are complete | Retaining source names during active preparation improves traceability and reduces rework. Surviving columns will be renamed in a controlled pass immediately before load. | Confirmed |
+| D025 | Standardise validated coded categorical values to business-friendly labels | Short codes were expanded only after their meanings were confirmed from column context and data patterns. This improves report readability while avoiding unsupported assumptions. Whole-value matching prevents single-letter codes from altering longer text values. | Confirmed |
+| D026 | Apply the same validated business mapping consistently across queries | Where an attribute such as Gender uses the same confirmed coding scheme in multiple queries, the same labels are used throughout the model. Consistent domains improve usability, filtering and maintainability. | Confirmed |
+| D027 | Retain Gender as an analytical segmentation attribute | Gender supports customer and prospect segmentation and may inform marketing analysis. It is therefore retained where relevant, while unnecessary personal contact information continues to be minimised. | Confirmed |
 
 ---
 
@@ -84,6 +87,7 @@ The following will be resolved as the project progresses:
 - Final employee analytical attributes
 - Final customer identifying/contact fields
 - Role of ProspectiveBuyer
+- Validation and standardisation of abbreviated `ProspectiveBuyer[Education]` values if the query remains in scope
 - Role of Call Center and Survey data
 - Final dimension flattening
 - Final fact-table relationships and grain
