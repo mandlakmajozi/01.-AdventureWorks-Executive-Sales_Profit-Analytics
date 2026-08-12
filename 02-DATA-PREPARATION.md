@@ -84,6 +84,27 @@ One confirmed issue was `NewFactCurrencyRate[DateKey]`, which was completely nul
 
 ---
 
+## Value Standardisation
+
+Populated values were also reviewed for abbreviations, coded categories and inconsistent business labels.
+
+Replacements were only approved where the meaning of the source code could be validated from the available data. The same code was not assumed to have the same meaning across different columns.
+
+Validated mappings included:
+
+- Product clothing sizes: `S`, `M`, `L`, `XL` expanded to business-friendly size descriptions while numeric product sizes were left unchanged
+- Product style: `M`, `F`, `U` expanded to `Male`, `Female`, `Unisex`
+- Employee marital status: `M`, `S` expanded to `Married`, `Single`
+- Gender attributes using the validated `M` / `F` coding expanded consistently to `Male` / `Female`
+
+Whole-value matching was used so that short codes such as `M` or `S` could not accidentally alter characters inside longer text values.
+
+Potential replacements whose meaning was not yet proven, such as `NA`, were left unchanged pending further evidence.
+
+An additional standardisation candidate was identified in `ProspectiveBuyer[Education]`, where abbreviated or incomplete education descriptions require mapping validation before any transformation is applied.
+
+---
+
 ## Validation
 
 Where profiling alone was insufficient, temporary validation columns were created.
@@ -92,7 +113,7 @@ These were used to test assumptions such as whether two columns contained identi
 
 Temporary validation columns were removed after the investigation was completed.
 
-Transformations affecting missing or derived values were also validated against related source fields or dimension keys before being accepted.
+Transformations affecting missing, derived or standardised values were validated against related source fields, distinct-value profiles or dimension keys before being accepted.
 
 ---
 
